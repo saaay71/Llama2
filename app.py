@@ -77,6 +77,14 @@ def generate(
         yield history + [(message, response)]
 
 
+def process_example(message: str) -> tuple[str, list[tuple[str, str]]]:
+    generator = generate(message, [], DEFAULT_SYSTEM_PROMPT, 1024, 0.95, 1,
+                         1000)
+    for x in generator:
+        pass
+    return '', x
+
+
 with gr.Blocks(css='style.css') as demo:
     gr.Markdown(DESCRIPTION)
     gr.DuplicateButton(value='Duplicate Space for private use',
@@ -136,13 +144,13 @@ with gr.Blocks(css='style.css') as demo:
         )
 
     gr.Examples(
-        examples = [
-        ["Hello there! How are you doing?"],
-        ["Can you explain briefly to me what is the Python programming language?"],
-        ["Explain the plot of Cinderella in a sentence."],
-        ["How many hours does it take a man to eat a Helicopter?"],
-        ["Write a 100-word article on 'Benefits of Open-Source in AI research'"]
-    ],
+        examples=[
+            'Hello there! How are you doing?',
+            'Can you explain briefly to me what is the Python programming language?',
+            'Explain the plot of Cinderella in a sentence.',
+            'How many hours does it take a man to eat a Helicopter?',
+            "Write a 100-word article on 'Benefits of Open-Source in AI research'",
+        ],
         inputs=textbox,
         outputs=[textbox, chatbot],
         fn=process_example,
