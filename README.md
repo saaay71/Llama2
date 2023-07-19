@@ -1,6 +1,6 @@
 ---
 title: Llama 2 13b Chat
-emoji: 🌍
+emoji: 🦙
 colorFrom: indigo
 colorTo: pink
 sdk: gradio
@@ -8,6 +8,7 @@ sdk_version: 3.37.0
 app_file: app.py
 pinned: false
 license: other
+suggested_hardware: a10g-small
 ---
 
 # LLAMA v2 Models
