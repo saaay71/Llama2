@@ -10,4 +10,8 @@ pinned: false
 license: other
 ---
 
-Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
+# LLAMA v2 Models
+
+Llama v2 was introduced in [this paper](https://arxiv.org/abs/2307.09288).
+
+This Space demonstrates [Llama-2-13b-chat-hf](meta-llama/Llama-2-13b-chat-hf) from Meta. Please, check the original model card for details.
