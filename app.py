@@ -3,13 +3,14 @@ from typing import Iterator
 import gradio as gr
 import torch
 
-from model import run
+from model import get_input_token_length, run
 
 DEFAULT_SYSTEM_PROMPT = """\
 You are a helpful, respectful and honest assistant. Always answer as helpfully as possible, while being safe.  Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.\n\nIf a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don't know the answer to a question, please don't share false information.\
 """
 MAX_MAX_NEW_TOKENS = 2048
 DEFAULT_MAX_NEW_TOKENS = 1024
+MAX_INPUT_TOKEN_LENGTH = 4000
 
 DESCRIPTION = """
 # Llama-2 13B Chat
@@ -33,6 +34,7 @@ this demo is governed by the original [license](https://huggingface.co/spaces/hu
 
 if not torch.cuda.is_available():
     DESCRIPTION += '\n<p>Running on CPU 🥶 This demo does not work on CPU.</p>'
+
 
 def clear_and_save_textbox(message: str) -> tuple[str, str]:
     return '', message
@@ -58,16 +60,15 @@ def generate(
     history_with_input: list[tuple[str, str]],
     system_prompt: str,
     max_new_tokens: int,
-    top_p: float,
     temperature: float,
+    top_p: float,
     top_k: int,
 ) -> Iterator[list[tuple[str, str]]]:
     if max_new_tokens > MAX_MAX_NEW_TOKENS:
         raise ValueError
 
     history = history_with_input[:-1]
-    generator = run(message, history, system_prompt, max_new_tokens,
-                    temperature, top_p, top_k)
+    generator = run(message, history, system_prompt, max_new_tokens, temperature, top_p, top_k)
     try:
         first_response = next(generator)
         yield history + [(message, first_response)]
@@ -78,11 +79,16 @@ def generate(
 
 
 def process_example(message: str) -> tuple[str, list[tuple[str, str]]]:
-    generator = generate(message, [], DEFAULT_SYSTEM_PROMPT, 1024, 0.95, 1,
-                         1000)
+    generator = generate(message, [], DEFAULT_SYSTEM_PROMPT, 1024, 1, 0.95, 50)
     for x in generator:
         pass
     return '', x
+
+
+def check_input_token_length(message: str, chat_history: list[tuple[str, str]], system_prompt: str) -> None:
+    input_token_length = get_input_token_length(message, chat_history, system_prompt)
+    if input_token_length > MAX_INPUT_TOKEN_LENGTH:
+        raise gr.Error(f'The accumulated input is too long ({input_token_length} > {MAX_INPUT_TOKEN_LENGTH}). Clear your chat history and try again.')
 
 
 with gr.Blocks(css='style.css') as demo:
@@ -156,6 +162,7 @@ with gr.Blocks(css='style.css') as demo:
         fn=process_example,
         cache_examples=True,
     )
+
     gr.Markdown(LICENSE)
 
     textbox.submit(
@@ -171,6 +178,11 @@ with gr.Blocks(css='style.css') as demo:
         api_name=False,
         queue=False,
     ).then(
+        fn=check_input_token_length,
+        inputs=[saved_input, chatbot, system_prompt],
+        api_name=False,
+        queue=False,
+    ).success(
         fn=generate,
         inputs=[
             saved_input,
@@ -198,6 +210,11 @@ with gr.Blocks(css='style.css') as demo:
         api_name=False,
         queue=False,
     ).then(
+        fn=check_input_token_length,
+        inputs=[saved_input, chatbot, system_prompt],
+        api_name=False,
+        queue=False,
+    ).success(
         fn=generate,
         inputs=[
             saved_input,
@@ -229,6 +246,7 @@ with gr.Blocks(css='style.css') as demo:
         inputs=[
             saved_input,
             chatbot,
+            system_prompt,
             max_new_tokens,
             temperature,
             top_p,

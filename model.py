@@ -25,9 +25,15 @@ def get_prompt(message: str, chat_history: list[tuple[str, str]],
                system_prompt: str) -> str:
     texts = [f'[INST] <<SYS>>\n{system_prompt}\n<</SYS>>\n\n']
     for user_input, response in chat_history:
-        texts.append(f'{user_input} [/INST] {response} [INST] ')
+        texts.append(f'{user_input.strip()} [/INST] {response.strip()} </s><s> [INST] ')
     texts.append(f'{message.strip()} [/INST]')
     return ''.join(texts)
+
+
+def get_input_token_length(message: str, chat_history: list[tuple[str, str]], system_prompt: str) -> int:
+    prompt = get_prompt(message, chat_history, system_prompt)
+    input_ids = tokenizer([prompt], return_tensors='np')['input_ids']
+    return input_ids.shape[-1]
 
 
 def run(message: str,
@@ -38,7 +44,7 @@ def run(message: str,
         top_p: float = 0.95,
         top_k: int = 50) -> Iterator[str]:
     prompt = get_prompt(message, chat_history, system_prompt)
-    inputs = tokenizer([prompt], return_tensors='pt').to("cuda")
+    inputs = tokenizer([prompt], return_tensors='pt').to('cuda')
 
     streamer = TextIteratorStreamer(tokenizer,
                                     timeout=10.,
