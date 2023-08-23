@@ -139,21 +139,21 @@ with gr.Blocks(css='style.css') as demo:
             value=50,
         )
 
-    gr.Examples(
-        examples=[
-            'Hello there! How are you doing?',
-            'Can you explain briefly to me what is the Python programming language?',
-            'Explain the plot of Cinderella in a sentence.',
-            'How many hours does it take a man to eat a Helicopter?',
-            "Write a 100-word article on 'Benefits of Open-Source in AI research'",
-        ],
-        inputs=textbox,
-        outputs=[textbox, chatbot],
-        fn=process_example,
-        cache_examples=True,
-    )
+    # gr.Examples(
+    #     examples=[
+    #         'Hello there! How are you doing?',
+    #         'Can you explain briefly to me what is the Python programming language?',
+    #         'Explain the plot of Cinderella in a sentence.',
+    #         'How many hours does it take a man to eat a Helicopter?',
+    #         "Write a 100-word article on 'Benefits of Open-Source in AI research'",
+    #     ],
+    #     inputs=textbox,
+    #     outputs=[textbox, chatbot],
+    #     fn=process_example,
+    #     cache_examples=True,
+    # )
 
-    gr.Markdown(LICENSE)
+    # gr.Markdown(LICENSE)
 
     textbox.submit(
         fn=clear_and_save_textbox,
